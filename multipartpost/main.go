@@ -6,6 +6,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"os"
 )
 
@@ -20,8 +21,13 @@ func main() {
 	writer.WriteField("name", "Michael Jackson")
 
 	// ** 4 から 6 までファイルを読み込む操作 ** //
-	// 4. 個別のファイル書き込みの io.Writer を作成
-	fileWriter, err := writer.CreateFormFile("thumbnail", "150x150.png")
+	// 4-1. MIME タイプに image/png を設定 (writer.CreateFormFile の処理を一部取り出して任意の処理を追加)
+	part := make(textproto.MIMEHeader)
+	part.Set("Content-Type", "image/png")
+	part.Set("Content-Disposition", `form-data; name="thumbnail"; filename="150x150.png"`)
+
+	// 4-2. 個別のファイル書き込みの io.Writer を作成
+	fileWriter, err := writer.CreatePart(part)
 	if err != nil {
 		panic(err)
 	}
